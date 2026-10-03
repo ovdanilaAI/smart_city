@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Умный Город — Дашборд</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #38bdf8;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --border: #334155;
+            --success: #22c55e;
+            --warning: #eab308;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 24px;
+            background-color: var(--bg-color);
+            color: var(--text);
+        }
+
+        header {
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 16px;
+        }
+
+        h1 { margin: 0; font-size: 24px; color: var(--accent); }
+        p.subtitle { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 18px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+            color: #fff;
+        }
+
+        .port-badge {
+            background: #0284c7;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: var(--accent);
+            color: #0f172a;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:hover { opacity: 0.85; }
+        button.secondary { background: #475569; color: #fff; }
+
+        .table-container {
+            overflow-x: auto;
+            max-height: 220px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: left;
+        }
+
+        th {
+            background: #0f172a;
+            color: var(--muted);
+            padding: 8px 10px;
+            position: sticky;
+            top: 0;
+        }
+
+        td {
+            padding: 8px 10px;
+            border-top: 1px solid var(--border);
+        }
+
+        tr:nth-child(even) { background: rgba(255, 255, 255, 0.02); }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .status-active, .status-paid, .status-sent { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+        .status-pending, .status-in_progress { background: rgba(234, 179, 8, 0.2); color: var(--warning); }
+
+        .form-inline {
+            display: flex;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        input {
+            background: #0f172a;
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 6px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🏙️ Умный Город — Панель Управления</h1>
+        <p class="subtitle">Интерактивный микросервисный дашборд</p>
+    </header>
+
+    <div class="grid">
+
+        <!-- 1. AUTH SERVICE -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">1. Авторизация и Пользователи</h2>
+                <span class="port-badge">:8001</span>
+            </div>
+            <div class="actions">
+                <button type="button" onclick="loadUsers()">Обновить список</button>
+            </div>
+            <div class="table-container">
+                <table id="tbl-users">
+                    <thead><tr><th>ID</th><th>Email</th><th>ФИО</th></tr></thead>
+                    <tbody><tr><td colspan="3" style="text-align:center;">Загрузка...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 2. TRANSPORT SERVICE -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">2. Городской Транспорт</h2>
+                <span class="port-badge">:8002</span>
+            </div>
+            <div class="actions">
+                <button type="button" onclick="loadVehicles()">Транспорт</button>
+                <button type="button" class="secondary" onclick="loadParkings()">Парковки</button>
+            </div>
+            <div class="table-container">
+                <table id="tbl-transport">
+                    <thead><tr><th>ID</th><th>Название / Адрес</th><th>Статус / Места</th></tr></thead>
+                    <tbody><tr><td colspan="3" style="text-align:center;">Загрузка...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 3. UTILITY SERVICE -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">3. ЖКХ и Заявки</h2>
+                <span class="port-badge">:8003</span>
+            </div>
+            <div class="actions">
+                <button type="button" onclick="loadIssues()">Заявки</button>
+            </div>
+            <div class="table-container">
+                <table id="tbl-issues">
+                    <thead><tr><th>ID</th><th>Категория</th><th>Описание</th><th>Статус</th></tr></thead>
+                    <tbody><tr><td colspan="4" style="text-align:center;">Загрузка...</td></tr></tbody>
+                </table>
+            </div>
+            <form class="form-inline" onsubmit="addIssue(event)">
+                <input type="text" id="issue-desc" placeholder="Новая проблема...">
+                <button type="submit">Создать</button>
+            </form>
+        </div>
+
+        <!-- 4. ENVIRONMENT SERVICE -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">4. Мониторинг Экологии</h2>
+                <span class="port-badge">:8004</span>
+            </div>
+            <div class="actions">
+                <button type="button" onclick="loadSensors()">Датчики</button>
+            </div>
+            <div class="table-container">
+                <table id="tbl-sensors">
+                    <thead><tr><th>ID</th><th>Локация</th><th>Тип датчика</th></tr></thead>
+                    <tbody><tr><td colspan="3" style="text-align:center;">Загрузка...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 5. BILLING SERVICE -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">5. Счета и Оплата</h2>
+                <span class="port-badge">:8005</span>
+            </div>
+            <div class="actions">
+                <button type="button" onclick="loadInvoices()">Счета (User #1)</button>
+            </div>
+            <div class="table-container">
+                <table id="tbl-invoices">
+                    <thead><tr><th>ID</th><th>Сумма</th><th>Статус</th></tr></thead>
+                    <tbody><tr><td colspan="3" style="text-align:center;">Загрузка...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 6. NOTIFICATION SERVICE -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">6. Сервис Уведомлений</h2>
+                <span class="port-badge">:8006</span>
+            </div>
+            <div class="actions">
+                <button type="button" onclick="loadNotifications()">История уведомлений</button>
+            </div>
+            <div class="table-container">
+                <table id="tbl-notifications">
+                    <thead><tr><th>ID</th><th>Сообщение</th><th>Статус</th></tr></thead>
+                    <tbody><tr><td colspan="3" style="text-align:center;">Загрузка...</td></tr></tbody>
+                </table>
+            </div>
+            <form class="form-inline" onsubmit="sendNotif(event)">
+                <input type="text" id="notif-msg" placeholder="Ручная отправка Push...">
+                <button type="submit">Отправить</button>
+            </form>
+        </div>
+
+    </div>
+
+    <script>
+        async function loadUsers() {
+            try {
+                const res = await fetch('http://127.0.0.1:8001/users');
+                const data = await res.json();
+                const tbody = document.querySelector('#tbl-users tbody');
+                tbody.innerHTML = data.map(u => `<tr><td>${u.id}</td><td>${u.email}</td><td>${u.full_name}</td></tr>`).join('');
+            } catch(e) { console.error(e); }
+        }
+
+        async function loadVehicles() {
+            try {
+                const res = await fetch('http://127.0.0.1:8002/vehicles');
+                const data = await res.json();
+                const tbody = document.querySelector('#tbl-transport tbody');
+                tbody.innerHTML = data.map(v => `<tr><td>${v.id}</td><td>${v.name}</td><td><span class="status-badge status-active">${v.status}</span></td></tr>`).join('');
+            } catch(e) { console.error(e); }
+        }
+
+        async function loadParkings() {
+            try {
+                const res = await fetch('http://127.0.0.1:8002/parking');
+                const data = await res.json();
+                const tbody = document.querySelector('#tbl-transport tbody');
+                tbody.innerHTML = data.map(p => `<tr><td>${p.id}</td><td>${p.address}</td><td>Мест: ${p.available_spots}/${p.total_spots}</td></tr>`).join('');
+            } catch(e) { console.error(e); }
+        }
+
+        async function loadIssues() {
+            try {
+                const res = await fetch('http://127.0.0.1:8003/issues');
+                const data = await res.json();
+                const tbody = document.querySelector('#tbl-issues tbody');
+                tbody.innerHTML = data.map(i => `<tr><td>${i.id}</td><td>${i.category}</td><td>${i.description}</td><td><span class="status-badge status-in_progress">${i.status}</span></td></tr>`).join('');
+            } catch(e) { console.error(e); }
+        }
+
+        async function addIssue(e) {
+            if (e) e.preventDefault();
+            const input = document.getElementById('issue-desc');
+            if(!input.value) return;
+            await fetch('http://127.0.0.1:8003/issues', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ user_id: 1, category: 'Общее', description: input.value })
+            });
+            input.value = '';
+            loadIssues();
+            setTimeout(loadNotifications, 500); // Авто-обновление уведомлений
+        }
+
+        async function loadSensors() {
+            try {
+                const res = await fetch('http://127.0.0.1:8004/sensors');
+                const data = await res.json();
+                const tbody = document.querySelector('#tbl-sensors tbody');
+                tbody.innerHTML = data.map(s => `<tr><td>${s.id}</td><td>${s.location}</td><td>${s.type}</td></tr>`).join('');
+            } catch(e) { console.error(e); }
+        }
+
+        async function loadInvoices() {
+            try {
+                const res = await fetch('http://127.0.0.1:8005/accounts/1/invoices');
+                const data = await res.json();
+                const tbody = document.querySelector('#tbl-invoices tbody');
+                tbody.innerHTML = data.map(i => `<tr><td>${i.id}</td><td>${i.amount} ₽</td><td><span class="status-badge status-${i.status}">${i.status}</span></td></tr>`).join('');
+            } catch(e) { console.error(e); }
+        }
+
+        async function loadNotifications() {
+            try {
+                const res = await fetch('http://127.0.0.1:8006/notifications');
+                const data = await res.json();
+                const tbody = document.querySelector('#tbl-notifications tbody');
+                tbody.innerHTML = data.map(n => `<tr><td>${n.id}</td><td>${n.message}</td><td><span class="status-badge status-sent">${n.status}</span></td></tr>`).join('');
+            } catch(e) { console.error(e); }
+        }
+
+        async function sendNotif(e) {
+            if (e) e.preventDefault();
+            const input = document.getElementById('notif-msg');
+            if(!input.value) return;
+            try {
+                await fetch('http://127.0.0.1:8006/notifications', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ user_id: 1, message: input.value })
+                });
+                input.value = '';
+                loadNotifications();
+            } catch(e) {
+                console.error("Ошибка отправки notification");
+            }
+        }
+
+        window.onload = () => {
+            loadUsers();
+            loadVehicles();
+            loadIssues();
+            loadSensors();
+            loadInvoices();
+            loadNotifications();
+        };
+    </script>
+</body>
+</html>
